@@ -3,9 +3,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const useragent = require('useragent');
+const cors = require('cors');
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors()); // Add CORS middleware
 
 const urlDatabase = new Map();
 
