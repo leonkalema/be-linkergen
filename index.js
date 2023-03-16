@@ -22,6 +22,7 @@ admin.initializeApp({
     auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
     client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
   }),
+  databaseURL: 'https://firimu-20d8c-default-rtdb.firebaseio.com',
 });
 
 const allowedOrigins = [
@@ -47,11 +48,10 @@ app.use(
 
 const urlDatabase = new Map();
 
-app.post('/api/generate', (req, res) => {
+app.post('/api/generate', async (req, res) => { // <-- Add the 'async' keyword here
   const { websiteUrl, appleStoreUrl, androidStoreUrl } = req.body;
   const uniqueId = crypto.randomBytes(8).toString('hex');
   const generatedUrl = `https://shy-tan-basket-clam-veil.cyclic.app/redirect/${uniqueId}`;
-
 
   urlDatabase.set(uniqueId, { websiteUrl, appleStoreUrl, androidStoreUrl });
 
@@ -63,13 +63,14 @@ app.post('/api/generate', (req, res) => {
   };
 
   try {
-    await database.ref(`links/${uniqueId}`).set(linkData);
+    await database.ref(`links/${uniqueId}`).set(linkData); // <-- Now 'await' will work correctly
     res.status(201).json({ generatedUrl });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error generating URL. Please try again.' });
   }
 });
+
 
 app.get('/redirect/:id', async (req, res) => {
   const { id } = req.params;
