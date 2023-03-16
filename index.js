@@ -24,11 +24,26 @@ admin.initializeApp({
   }),
 });
 
+const allowedOrigins = [
+  'https://vast-erin-sockeye-toga.cyclic.app',
+  // Add any other origins you want to allow, if necessary
+];
+
 const database = admin.database();
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors()); // Add CORS middleware
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+  })
+);
 
 const urlDatabase = new Map();
 
