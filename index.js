@@ -14,7 +14,8 @@ const urlDatabase = new Map();
 app.post('/api/generate', (req, res) => {
   const { websiteUrl, appleStoreUrl, androidStoreUrl } = req.body;
   const uniqueId = crypto.randomBytes(8).toString('hex');
-  const generatedUrl = `https://yourdomain.com/redirect/${uniqueId}`;
+  const generatedUrl = `https://shy-tan-basket-clam-veil.cyclic.app/redirect/${uniqueId}`;
+
 
   urlDatabase.set(uniqueId, { websiteUrl, appleStoreUrl, androidStoreUrl });
 
