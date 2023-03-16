@@ -4,6 +4,27 @@ const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const useragent = require('useragent');
 const cors = require('cors');
+const admin = require('firebase-admin');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+admin.initializeApp({
+  credential: admin.credential.cert({
+    type: process.env.FIREBASE_TYPE,
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    client_id: process.env.FIREBASE_CLIENT_ID,
+    auth_uri: process.env.FIREBASE_AUTH_URI,
+    token_uri: process.env.FIREBASE_TOKEN_URI,
+    auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
+    client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
+  }),
+});
+
+const database = admin.database();
 
 const app = express();
 app.use(bodyParser.json());
@@ -19,31 +40,50 @@ app.post('/api/generate', (req, res) => {
 
   urlDatabase.set(uniqueId, { websiteUrl, appleStoreUrl, androidStoreUrl });
 
-  res.json({ generatedUrl });
+  const linkData = {
+    uniqueId,
+    websiteUrl,
+    appleStoreUrl,
+    androidStoreUrl,
+  };
+
+  try {
+    await database.ref(`links/${uniqueId}`).set(linkData);
+    res.status(201).json({ generatedUrl });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error generating URL. Please try again.' });
+  }
 });
 
-app.get('/redirect/:id', (req, res) => {
+app.get('/redirect/:id', async (req, res) => {
   const { id } = req.params;
-  const urls = urlDatabase.get(id);
 
-  if (!urls) {
-    res.status(404).send('URL not found');
-    return;
-  }
+  try {
+    const linkSnapshot = await database.ref(`links/${id}`).once('value');
+    const linkData = linkSnapshot.val();
 
-  const userAgent = useragent.parse(req.headers['user-agent']);
-  const isMobile = userAgent.device && userAgent.device.type === 'mobile';
-  const isIos = isMobile && userAgent.os.family === 'iOS';
-  const isAndroid = isMobile && userAgent.os.family === 'Android';
+    if (!linkData) {
+      return res.status(404).send('URL not found');
+    }
 
-  if (isIos) {
-    res.redirect(urls.appleStoreUrl);
-  } else if (isAndroid) {
-    res.redirect(urls.androidStoreUrl);
-  } else {
-    res.redirect(urls.websiteUrl);
+    const agent = useragent.parse(req.headers['user-agent']);
+
+    if (agent.isMobile) {
+      if (agent.os.family === 'iOS') {
+        return res.redirect(linkData.appleStoreUrl);
+      } else if (agent.os.family === 'Android') {
+        return res.redirect(linkData.androidStoreUrl);
+      }
+    }
+
+    res.redirect(linkData.websiteUrl);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error processing the request. Please try again.');
   }
 });
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
