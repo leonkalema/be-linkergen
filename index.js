@@ -3,6 +3,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const useragent = require('useragent');
+const MobileDetect = require('mobile-detect');
+
 const cors = require('cors');
 const admin = require('firebase-admin');
 const dotenv = require('dotenv');
@@ -83,12 +85,12 @@ app.get('/redirect/:id', async (req, res) => {
       return res.status(404).send('URL not found');
     }
 
-    const agent = useragent.parse(req.headers['user-agent']);
+    const md = new MobileDetect(req.headers['user-agent']);
 
-    if (agent.isMobile) {
-      if (agent.os.family === 'iOS') {
+    if (md.mobile()) { // Check if the device is a mobile device
+      if (md.is('iPhone') || md.is('iPad')) { // Check if the device is an iPhone or iPad
         return res.redirect(linkData.appleStoreUrl);
-      } else if (agent.os.family === 'Android') {
+      } else if (md.is('AndroidOS')) { // Check if the device is running Android
         return res.redirect(linkData.androidStoreUrl);
       }
     }
@@ -99,6 +101,7 @@ app.get('/redirect/:id', async (req, res) => {
     res.status(500).send('Error processing the request. Please try again.');
   }
 });
+
 
 
 const PORT = process.env.PORT || 3001;
