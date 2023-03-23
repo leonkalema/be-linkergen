@@ -6,6 +6,7 @@ const useragent = require('useragent');
 const MobileDetect = require('mobile-detect');
 
 const cors = require('cors');
+app.options('*', cors());
 const admin = require('firebase-admin');
 const dotenv = require('dotenv');
 
@@ -29,6 +30,8 @@ admin.initializeApp({
 
 const allowedOrigins = [
   'https://vast-erin-sockeye-toga.cyclic.app',
+  'https://main--chipper-monstera-2ff2ef.netlify.app/',
+  'https://linkergen.com',
   // Add any other origins you want to allow, if necessary
 ];
 
