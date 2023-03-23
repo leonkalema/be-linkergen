@@ -29,6 +29,8 @@ admin.initializeApp({
 
 const allowedOrigins = [
   'https://vast-erin-sockeye-toga.cyclic.app',
+  'https://main--chipper-monstera-2ff2ef.netlify.app/',
+  'https://linkergen.com'
   // Add any other origins you want to allow, if necessary
 ];
 
