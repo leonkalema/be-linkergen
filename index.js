@@ -55,7 +55,7 @@ const urlDatabase = new Map();
 app.post('/api/generate', async (req, res) => { // <-- Add the 'async' keyword here
   const { websiteUrl, appleStoreUrl, androidStoreUrl } = req.body;
   const uniqueId = crypto.randomBytes(8).toString('hex');
-  const generatedUrl = `https://linkergen.com/redirect/${uniqueId}`;
+  const generatedUrl = `https://shy-tan-basket-clam-veil.cyclic.app/redirect/${uniqueId}`;
 
   urlDatabase.set(uniqueId, { websiteUrl, appleStoreUrl, androidStoreUrl });
 
